@@ -1,5 +1,6 @@
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import cgi
+
 import os
 
 from sqlalchemy import create_engine
@@ -25,11 +26,7 @@ main_page = '''
 </head>
 <body>
 	<div class="section values">
-		<div class="container">
-			<div class="row">
-				<div class="one-half column">{content}</div>
-			</div>
-		</div>
+		{content}
 	</div>
 </body>
 </html>
@@ -52,11 +49,33 @@ class WebServerHandler(BaseHTTPRequestHandler):
 				self.end_headers()
 
 				output = '''
-				<h1>Hello</h1>
-				<form method="POST" action="hello" enctype="multipart/form-data">
-					<h2> What would you like me to say? </h2>
-					<input type="text" name="message"><input type="submit" value="Submit">
-				</form>
+				<div class="section values">
+					<div class="container">
+						<h2>Hello</h2>
+						<form method="POST" action="hello" enctype="multipart/form-data">
+							<h2> What would you like me to say? </h2>
+							<input type="text" name="message"><input type="submit" value="Submit">
+						</form>
+					</div>
+				</div>
+				'''
+
+				self.wfile.write(main_page.format(content=output))
+				return
+			if self.path.endswith("/new"):
+				self.send_response(200)
+				self.send_header('Content-type', 'text/html')
+				self.end_headers()
+
+				output = '''
+				<div class="section values">
+					<div class="container">
+						<h2>Add a new Restaurant: </h2>
+						<form method="POST" action="new" enctype="multipart/form-data">
+							<input type="text" name="nameOfRestaurant" placeholder="Name of new restaurant"><input type="submit" value="Submit">
+						</form>
+					</div>
+				</div>
 				'''
 
 				self.wfile.write(main_page.format(content=output))
@@ -68,28 +87,42 @@ class WebServerHandler(BaseHTTPRequestHandler):
 
 				engine = create_engine('sqlite:///restaurantmenu.db')
 				Base.metadata.bind = engine
-
 				DBSession = sessionmaker(bind=engine)
 				sessinon = DBSession()	
 
-				restaurants = sessinon.query(Restaurant).all()
-
-				# A single movie entry html template
-				listRestaurant_element_html = '''
+				# Restaurants entry html template
+				list_restaurant_html = '''
+				<div class="container">
+					{content}
+				</div>
+				'''
+				# A single Restaurant entry html template
+				list_restaurant_element_html = '''
 				<div class="row">
 					<h3>{name}</h3>
 					<a class="button button-primary" href="#">Edit</a>
 					<a class="button button-red" href="#">Delete</a>
 				</div>
 				'''
+				# New Restaurant html template
+				add_block_html = '''
+				<div class="container values">
+					<div class="row">
+						<a class="button button-primary" href="/new">Add a new Restaurant</a>
+					</div>
+				</div>
+				'''
 
+				restaurants = sessinon.query(Restaurant).all()
+				listRestaurantElements = ""
 				# Get List of restaurants
-				listRestaurants = "<ul>"
 				for restaurant in restaurants:
-					listRestaurants += listRestaurant_element_html.format(name=restaurant.name)
-				listRestaurants += "</ul>"
+					listRestaurantElements += list_restaurant_element_html.format(name=restaurant.name)
+				listRestaurant = list_restaurant_html.format(content=listRestaurantElements)
 
-				self.wfile.write(main_page.format(content=listRestaurants))
+				output = listRestaurant + add_block_html
+
+				self.wfile.write(main_page.format(content=output))
 				return
 		except IOError:
 			self.send_error(404, 'File Not Found: %s' % self.path)
@@ -105,12 +138,16 @@ class WebServerHandler(BaseHTTPRequestHandler):
 				messagecontent = fields.get('message')
 
 			output = '''
-				<h1>Okay, how about this: </h1>
-				<h2>{text}</h2>
-				<form method="POST" action="hello" enctype="multipart/form-data">
-					<h2> What would you like me to say? </h2>
-					<input type="text" name="message"><input type="submit" value="Submit">
-				</form>
+				<div class="section values">
+					<div class="container">
+						<h2>Okay, how about this:</h2>
+						<h2>{text}</h2>
+						<form method="POST" action="hello" enctype="multipart/form-data">
+							<h2> What would you like me to say? </h2>
+							<input type="text" name="message"><input type="submit" value="Submit">
+						</form>
+					</div>
+				</div>
 				'''
 
 			self.wfile.write(main_page.format(content=output.format(text=messagecontent[0])))
