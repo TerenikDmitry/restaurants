@@ -1,26 +1,65 @@
 from BaseHTTPServer import BaseHTTPRequestHandler, HTTPServer
 import cgi
+import os
 
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from database_setup import Restaurant, Base, MenuItem
 
+# Styles and scripting for the page
+main_page = '''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>Terenik!</title>
+	<meta name="description" content="">
+	<meta name="author" content="">
+
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link href="//fonts.googleapis.com/css?family=Raleway:400,300,600" rel="stylesheet" type="text/css">
+	<link rel="stylesheet" href="css/normalize.css">
+	<link rel="stylesheet" href="css/skeleton.css">
+	<link rel="stylesheet" href="css/custom.css">
+</head>
+<body>
+	<div class="section values">
+		<div class="container">
+			<div class="row">
+				<div class="one-half column">{content}</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>
+'''
+
 class WebServerHandler(BaseHTTPRequestHandler):
 	def do_GET(self):
 		try:
+			if self.path.endswith(".css"):
+				f = open(os.curdir+os.sep+self.path)
+				self.send_response(200)
+				self.send_header('Content-type', 'text/css')
+				self.end_headers()
+				self.wfile.write(f.read())
+				f.close()
+				return
 			if self.path.endswith("/hello"):
 				self.send_response(200)
 				self.send_header('Content-type', 'text/html')
 				self.end_headers()
-				message = "<html><body>"
-				message += "Hello!"
-				message += "<form method='POST' action='hello' enctype='multipart/form-data'>"
-				message += "<h2> What would you like me to say? </h2>"
-				message += "<input type='text' name='message'><input type='submit' value='Submit'>"
-				message += "</form>"
-				message += "</body></html>"
-				self.wfile.write(message)
+
+				output = '''
+				<h1>Hello</h1>
+				<form method="POST" action="hello" enctype="multipart/form-data">
+					<h2> What would you like me to say? </h2>
+					<input type="text" name="message"><input type="submit" value="Submit">
+				</form>
+				'''
+
+				self.wfile.write(main_page.format(content=output))
 				return
 			if self.path.endswith("/restaurants"):
 				self.send_response(200)
@@ -35,18 +74,22 @@ class WebServerHandler(BaseHTTPRequestHandler):
 
 				restaurants = sessinon.query(Restaurant).all()
 
-				output = "<html><body>"
+				# A single movie entry html template
+				listRestaurant_element_html = '''
+				<div class="row">
+					<h3>{name}</h3>
+					<a class="button button-primary" href="#">Edit</a>
+					<a class="button button-red" href="#">Delete</a>
+				</div>
+				'''
 
 				# Get List of restaurants
 				listRestaurants = "<ul>"
 				for restaurant in restaurants:
-					listRestaurants += "<li>" + restaurant.name + "</li>"
+					listRestaurants += listRestaurant_element_html.format(name=restaurant.name)
 				listRestaurants += "</ul>"
-				output += listRestaurants
 
-				output += "</body></html>"
-
-				self.wfile.write(output)
+				self.wfile.write(main_page.format(content=listRestaurants))
 				return
 		except IOError:
 			self.send_error(404, 'File Not Found: %s' % self.path)
@@ -61,17 +104,16 @@ class WebServerHandler(BaseHTTPRequestHandler):
 				fields = cgi.parse_multipart(self.rfile, pdict)
 				messagecontent = fields.get('message')
 
-			output = "<html><body>"
-			output += "<h2> Okay, how about this: </h2>"
-			output += "<h2> %s </h2>" % messagecontent[0]
+			output = '''
+				<h1>Okay, how about this: </h1>
+				<h2>{text}</h2>
+				<form method="POST" action="hello" enctype="multipart/form-data">
+					<h2> What would you like me to say? </h2>
+					<input type="text" name="message"><input type="submit" value="Submit">
+				</form>
+				'''
 
-			output += "<form method='POST' action='hello' enctype='multipart/form-data'>"
-			output += "<h2> What would you like me to say? </h2>"
-			output += "<input type='text' name='message'><input type='submit' value='Submit'>"
-			output += "</form>"
-			output += "</body></html>"
-
-			self.wfile.write(output)
+			self.wfile.write(main_page.format(content=output.format(text=messagecontent[0])))
 			return
 		except:
 			pass
