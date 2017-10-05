@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+<div class="section values">
+<div class="container">
+	<h2>Edit "{{restaurant.name}}"</h2>
+	<a class="button button-primary" href="{{url_for('restaurantList')}}">Back to the list of restaurants</a>
+	<hr>
+	<form method="POST" action="editRestaurant" enctype="multipart/form-data">
+        <input type="text" name="nameOfRestaurant" placeholder="New name">
+        <input type="submit" value="Edit">
+    </form>
+</div>
+</div>
+</body>
+</html>

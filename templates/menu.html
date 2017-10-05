@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+<div class="section values">
+<div class="container">
+	<h2>{{restaurant.name}}</h2>
+	<a class="button" href="{{url_for('menuAdd',restaurantID=restaurant.id)}}">Create new item</a>
+	<a class="button" href="{{url_for('restaurantList')}}">Back to the list of restaurants</a>
+	<hr>
+	{% for i in items %}
+	<div class="row">
+		<h3>{{i.name}}</h3>
+		<p>{{i.description}}</p>
+		<p>price: {{i.price}}</p>
+		<p>course: {{i.course}}</p>
+		<a class="button" href="{{url_for('menuEdit',restaurantID = restaurant.id, menuID = i.id)}}">Edit</a>
+		<a class="button button-red" href="{{url_for('menuDelete', restaurantID = restaurant.id, menuID = i.id)}}">Delete</a>
+	</div>
+	{% endfor %}
+</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+<div class="section values">
+<div class="container">
+	<h2>Add menu item to "{{restaurant.name}}" restaurant.</h2>
+	<a class="button button-primary" href="{{url_for('restaurantMenu',restaurantID=restaurant.id)}}">Back to the list of menu</a>
+	<hr>
+	<form method="POST" action="addMenuItem"" enctype="multipart/form-data">
+        <input type="text" name="nameOfMenuItem" placeholder="New name"><br>
+        <input type="text" name="priceOfMenuItem" placeholder="New price"><br>
+        <input type="text" name="courseOfMenuItem" placeholder="New course"><br>
+        <input type="text" name="restaurantOfMenuItem" placeholder="New course" hidden="true" value="{{restaurant.id}}">
+        <textarea name="descriptionOfMenuItem" rows="10" placeholder="New description"></textarea><br>
+        <input type="submit" value="Add">
+    </form>
+</div>
+</div>
+</body>
+</html>

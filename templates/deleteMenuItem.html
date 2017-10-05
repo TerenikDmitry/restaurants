@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<body>
+<div class="section values">
+<div class="container">
+	<h2>Delete "{{menu_item.name}}" from "{{restaurant.name}} restaurant"?</h2>
+	<hr>
+	<form method="POST" action="deleteMenuItem" enctype="multipart/form-data">
+        <a class="button button-primary" href="{{url_for('restaurantMenu',restaurantID=restaurant.id)}}">Back</a>
+        <input type="submit" value="Delete">
+    </form>
+</div>
+</div>
+</body>
+</html>
